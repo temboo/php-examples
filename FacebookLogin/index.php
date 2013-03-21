@@ -358,11 +358,11 @@ function oauthReset() {
 
         <?php else: ?>
 
-            <p>Sorry! We can't find any Likes for this account.</p>
+            <p>Sorry! We can't find any public likes for this Facebook account.</p>
 
         <?php endif; ?>
 
-        <p><a href="<?php echo TEMBOO_EXAMPLE_URI ?>?action=oauth_reset">Reset example</a></p>
+        <p><a href="<?php echo TEMBOO_EXAMPLE_URI ?>?action=oauth_reset">Reset</a></p>
 
     <?php else: ?>
 
