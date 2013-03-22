@@ -346,7 +346,7 @@ function oauthReset() {
 
                 <p>
                     <a href="<?php echo $like->link; ?>">
-                        <img src="<?php echo TEMBOO_EXAMPLE_URI; ?>?action=get_picture&object_id=<?php echo $like->id; ?>" width="50" height="50" /></a>
+                        <img src="<?php echo TEMBOO_EXAMPLE_URI; ?>?action=get_picture&amp;object_id=<?php echo $like->id; ?>" width="50" height="50" /></a>
                     </a>
                     <br />
                     <a href="<?php echo $like->link; ?>">
@@ -358,7 +358,7 @@ function oauthReset() {
 
         <?php else: ?>
 
-            <p>Sorry! We can't find any public likes for this Facebook account.</p>
+            <p>Sorry! We can't find any public likes for this account.</p>
 
         <?php endif; ?>
 
