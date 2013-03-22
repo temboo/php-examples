@@ -13,7 +13,7 @@ See this example in action at [temboo.com/examples](https://temboo.com/examples)
  4. Under the [Facebook OAuth section of the Temboo Library](https://live.temboo.com/library/Library/Facebook/OAuth/), choose `+ Add new` from the Credentials sidebar and create a new credential. You can get the `AppId` and `AppSecret` from the Facebook app you just created, and the `AppKeyName` and `AppKeyValue` from the Temboo [My Account](https://live.temboo.com/account) page.
 
 ####Install the Example
- 1. Clone this repo: `git clone git@github.com:temboo/SDK-Examples.git`
+ 1. Clone this repo: `git clone git@github.com:temboo/php-examples.git`
  2. Download the [Temboo PHP SDK](https://temboo.com/download) and unzip it into the `FacebookLogin` directory.
  3. Edit the constants defined at the top of `index.php` with your Temboo credentials.
  4. Upload the `FacebookLogin` directory to your web host and visit `index.php` in your browser.
