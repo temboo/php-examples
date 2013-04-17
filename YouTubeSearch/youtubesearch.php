@@ -45,6 +45,17 @@ define('TEMBOO_APPLICATIONKEY_NAME', 'YOU KEY NAME');
 define('TEMBOO_APPLICATIONKEY', 'YOUR KEY');
 
 /*
+ * To run the video details choreo, you need to have YouTube credentials. You
+ * may provide the name of a valid YouTube credential, or the values for the
+ * client ID, secret, and refresh token for your account. If you do not have a
+ * credential, be sure to leave the YOUTUBE_CREDENTIAL constant null.
+ */
+define('YOUTUBE_CREDENTIAL', null);
+define('YOUTUBE_CLIENT_ID', null);
+define('YOUTUBE_CLIENT_SECRET', null);
+define('YOUTUBE_REFRESH_TOKEN', null);
+
+/*
 This is a bare-bones version (free of external dependencies beyond the Temboo
 PHP SDK) of the YouTube Search example from the Temboo examples page. It
 searches for a specified string, returns the first 6 results.
@@ -52,47 +63,77 @@ searches for a specified string, returns the first 6 results.
 
 /**
  * Search YouTube videos and return results as a JSON array.
- * 
- * @param queryString - Search terms to send to YouTube.
- * @param session - Temboo session. If null, one will be created for you using
- *                  the constants you specified above.
+ * @param queryString What kind of videos we want.
+ * @return JSON encoded array of the first 6 videos corresponding to your 
+  *        search.
  */
-function ytsearch($queryString, $session = null) {
-    // If a session has not been provided, create one.
-    if (is_null($session)) {
-        $session = createSession();
+function ytsearch($queryString, $temboo_session = null) {
+    if (is_null($temboo_session)) {
+        $temboo_session = createSession();
     }
+    $ytSearch = new YouTube_Search_ListSearchResults($temboo_session);
+    $ytSearchInputs = $ytSearch->newInputs();
+        
+    // The basic search choreo will use a default Temboo credential.
+    $ytSearchInputs->setType("video");
+    $ytSearchInputs->setMaxResults("6");
+    $ytSearchInputs->setQuery($queryString);
+    $ytSearchInputs->setVideoEmbeddable("true");
+    $ytSearchInputs->setPart("id");
+    $ytSearchInputs->setFields("items/id/videoId");
 
-    // Initialize the search choreo.
-    $youtubeSearch = new YouTube_SearchVideos($session);
+    $ytSearchResults = $ytSearch->execute($ytSearchInputs)->getResults();
+    $ytSearchResponse = json_decode($ytSearchResults->getResponse());
 
-    // Configure your search inputs.
-    $youtubeSearchInputs = $youtubeSearch->newInputs();
-    $youtubeSearchInputs->setQuery('Query', $queryString);
-    $youtubeSearchInputs->setMaxResults('6');
-    $youtubeSearchInputs->setResponseFormat('json');
-    
-    // Get JSON response and parse it into a PHP array.
-    $videoArray = json_decode($youtubeSearch->execute(
-            $youtubeSearchInputs)->getResults()->getResponse(), true);
-    
-    // Get rid of query-wide metadata.
-    $videoArray = $videoArray['feed']['entry'];
-    
-    $details = array();
-    // Extract the details in which you are interested.
-    foreach ($videoArray as $video) {
-        $currDetails = array('title' => $video['title']['$t'],
-                'link' => $video['content']['src'],
-                'thumbnail' => str_replace('http', 'https',
-                    $video['media$group']['media$thumbnail'][0]['url']),
-                'time' => durationString($video['media$group']['yt$duration']
-                                         ['seconds']),
-                'views' => $video['yt$statistics']['viewCount'],
-                'age' => ageString($video['published']['$t']));
-        array_push($details, $currDetails);
+    if (count($ytSearchResponse->items)) {
+        $idList = array();
+        foreach ($ytSearchResponse->items as $target) {
+            $idList[] = $target->id->videoId;
+        }
+
+        $ytDetails = new YouTube_Videos_ListVideosByID($temboo_session);
+        $ytDetailsInputs = $ytDetails->newInputs();
+
+        if (is_null(YOUTUBE_CREDENTIAL)) {
+            // If you have not defined a credential, use this.
+            $ytDetailsInputs->setClientID(YOUTUBE_CLIENT_ID);
+            $ytDetailsInputs->setClientSecret(YOUTUBE_CLIENT_SECRET);
+            $ytDetailsInputs->setRefreshToken(YOUTUBE_REFRESH_TOKEN);
+        } else {
+            // Otherwise, simply refer to the credential name.
+            $ytDetailsInputs->setCredential(YOUTUBE_CREDENTIAL);
+        }
+        // $ytDetailsInputs->setCredential("YouTubeCredential");
+        // Convert array of ids to a string.
+        $ytDetailsInputs->setVideoID(implode(",", $idList));
+        // Specify what information we want.
+        $ytDetailsInputs->setPart("contentDetails,statistics,snippet");
+
+        $ytDetailsResults = $ytDetails->execute($ytDetailsInputs)->getResults();
+        $ytDetailsResponse = json_decode($ytDetailsResults->getResponse());
+
+        // What we'll be sending back to build the page.
+        $details = array();
+        
+        // Get information about each video.
+        foreach ($ytDetailsResponse->items as $video) {
+            $currDetails = array("title" => $video->snippet->title,
+                                 "link" => "http://www.youtube.com/watch?v=" . $video->id,
+                                 "thumbnail" => $video->snippet->thumbnails->default->url,
+                                 "time" => durationString($video->contentDetails->duration),
+                                 "views" => $video->statistics->viewCount,
+                                 "age" => ageString($video->snippet->publishedAt),
+                                 "embedsrc" => "https://www.youtube.com/embed/" . $video->id);
+            array_push($details, $currDetails);
+        }
+
+        return json_encode(array("result" => "success",
+                                 "payload" => $details));
+    } else {
+        // Our query returned no results.
+        return json_encode(array("result" => "failure",
+                                 "payload" => "empty"));
     }
-    return json_encode($details);
 }
 
 /**
@@ -146,14 +187,19 @@ function ageString($dateString) {
 /**
  * Convert seconds into minutes:seconds.
  * 
- * @param duration - Seconds of runtime for video.
+ * @param duration - YouTube formatted duration string.
  *
- * @return String showing minutes:seconds.
+ * @return String showing hours(if salient):minutes:seconds.
  */
 function durationString($duration) {
-    $seconds = $duration % 60;
-    $minutes = floor($duration / 60);
-    return (string) $minutes . ':' . (string) $seconds;
+    if(preg_match('/^PT((?P<hours>\d+)H)?((?P<minutes>\d+)M)?((?P<seconds>\d+)S)?$/', $duration, $matches)) {
+        $hours = isset($matches['hours']) && intval($matches['hours']) > 0 ?  sprintf('%02d', $matches['hours']) . ':' : '';
+        $minutes = isset($matches['minutes']) ?  sprintf('%02d', $matches['minutes']) : '00';
+        $seconds = isset($matches['seconds']) ?  sprintf('%02d', $matches['seconds']) : '00';
+        return $hours . $minutes . ':' . $seconds;
+    } else {
+        return '00:00';
+    }
 }
 
 /**
@@ -177,21 +223,21 @@ function createSession() {
 <body>
     <div>
         <!-- Form for updating the results being shown. -->
-        <form action="" method="get">
+        <form action="" method="post">
             <input type="text" name="queryString" />
             <input type="submit" />
         </form>
     </div>
     <div>
         <?php
-        if (is_null($_GET['queryString'])) {
+        if (is_null($_POST['queryString'])) {
             $queryString = 'dogs driving cars';
         } else {
-            $queryString = $_GET['queryString'];
+            $queryString = $_POST['queryString'];
         }
         $videos = json_decode(ytsearch($queryString), true);
 
-        foreach ($videos as $video) {
+        foreach ($videos['payload'] as $video) {
             $divConent = array('<div><a class="ytlink" href="', 
                            $video['link'], 
                            '">',

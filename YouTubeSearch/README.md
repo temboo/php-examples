@@ -1,6 +1,6 @@
 ###YouTube Search
 
-A single Choreo can be a very powerful thing.
+A pair of Choreos can be a very powerful thing.
 
 This example shows how a few lines of code can give your app access to the wonderful world of YouTube. 
 
@@ -10,9 +10,9 @@ See this example in action at [temboo.com/examples](https://temboo.com/examples)
 
 ###Details
 
-This PHP micro-application displays a page containing the top six YouTube videos for a particular search term. The search term defaults to "dogs driving cars" (why not?!). Use the search box provided to try your own favorite YouTube search. 
+This PHP micro-application displays a page containing the top six YouTube videos for a particular search term. The search term defaults to "data visualization." Use the search box provided to try your own favorite YouTube search. 
 
-The interaction with YouTube is handled via Temboo's `YouTube.SearchVideos` choreo. In addition to handling the search request, the Choreo translates YouTube's XML response to JSON for simpler deserialization.
+The interaction with YouTube is handled via Temboo's `YouTube.Search.ListSearchResults` and `YouTube.Videos.ListVideosByID` choreos. In addition to handling the search request, the Choreos translates YouTube's XML response to JSON for simpler deserialization.
 
 While the example creates a session for you, the `ytsearch` function can accept a Temboo session as an argument, making this example easy to drop into a larger Temboo-based application. 
 
@@ -20,7 +20,8 @@ While the example creates a session for you, the `ytsearch` function can accept 
 
 * [Sign up](https://www.temboo.com) for a free Temboo account and download the Temboo PHP SDK.
 * Add the Temboo SDK as a library to your PHP project. You can find instructions on how to do this [here](https://www.temboo.com/public/support/getting-started).
-* Edit the PHP code to include your Temboo credentials. 
+* Set up your YouTube credentials. Instructions may be found on Temboo's [YouTube library page](https://www.temboo.com/library/Library/YouTube/)
+* Edit the PHP code to include your Temboo and YouTube credentials.
 * Run it!
 
 ###About Temboo
