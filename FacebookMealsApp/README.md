@@ -1,4 +1,4 @@
-Tumptious
+Tumptious (Temboo & Scrumptious)
 =========
 
 Tumptious is a simple PHP example that demonstrates using the Temboo SDK to create applications that interact with the Facebook API. It is based on Facebook's [Scrumptious](http://facebooksampleapp.com/scrumptious/) example app. Our example illustrates how the Temboo SDK can easily:
