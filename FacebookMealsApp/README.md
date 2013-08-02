@@ -1,7 +1,7 @@
 Tumptious
 =========
 
-Tumptious is a simple PHP example that demonstrates using the Temboo SDK to create applications that interact with the Facebook API. This example illustrates how the Temboo SDK can easily:
+Tumptious is a simple PHP example that demonstrates using the Temboo SDK to create applications that interact with the Facebook API. It is based on Facebook's [Scrumptious](http://facebooksampleapp.com/scrumptious/) example app. Our example illustrates how the Temboo SDK can easily:
 
   - Perform Facebook OAuth authentication
   - Retrieve Facebook user information
