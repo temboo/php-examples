@@ -16,9 +16,11 @@ Quickstart
  2. Clone the repo: `git clone git@github.com:temboo/php-examples.git`
 
  3. Register an app on Facebook at [https://developers.facebook.com/apps/](https://developers.facebook.com/apps/). 
-   - Configure the app as a "website with Facebook login"
-   - Specify `temboolive.com` as the App Domain
-   - Specify `https://temboolive.com` as the Site URL
+  - Configure the app as a "website with Facebook login"
+  - Specify the site where you will host the app as the Site URL
+  - Specify the domain of that site as the App Domain
+  - In the Advanced tab of your app settings, scroll down to Security and specify `https://YOUR_TEMBOO_ACCOUNT_NAME.temboolive.com/` for Valid OAuth redirect URIs
+
   
  4. Edit `config.php` to contain the Application ID and Application Secret obtained after registering your app on Facebook. Update the Base URI and Static Base URI to reflect the location where you're hosting this app.
  5. Edit `tumptious-config.php` to contain your Temboo account name, App Key name, and App Key. You can find your Temboo App Key information on the Temboo website, under My Account &gt; Application Keys.
